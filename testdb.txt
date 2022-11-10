@@ -1,0 +1,107 @@
+CREATE TABLE users
+(
+	user_id serial PRIMARY KEY,
+	age SMALLINT
+);
+
+CREATE TABLE items
+(
+	item_id serial PRIMARY KEY,
+	price real
+);
+
+
+CREATE TABLE purchases
+(
+	purchases_id serial PRIMARY KEY,
+	fk_user_id int REFERENCES users(user_id),
+	fk_item_id int REFERENCES items(item_id),
+	date1 DATE
+);
+
+INSERT INTO users
+VALUES
+(1, 28),
+(2, 18),
+(3, 24),
+(4, 45),
+(5, 24),
+(6, 27),
+(7, 63),
+(8, 39),
+(9, 29),
+(10, 19),
+(11, 36),
+(12, 30);
+
+
+INSERT INTO items
+VALUES
+(1, 20),
+(2, 35),
+(3, 124),
+(4, 63),
+(5, 72.5),
+(6, 19.8),
+(7, 32),
+(8, 55.3);
+
+INSERT INTO purchases
+VALUES
+(1, 1, 3, '2022-02-13'),
+(2, 2, 4, '2021-01-09'),
+(3, 3, 2, '2020-05-22'),
+(4, 3, 8, '2021-10-15'),
+(5, 4, 1, '2019-08-10'),
+(6, 5, 7, '2022-08-30'),
+(7, 5, 8, '2019-02-03'),
+(8, 6, 6, '2021-05-24'),
+(9, 7, 5, '2020-11-07'),
+(10, 8, 8, '2021-01-10'),
+(11, 9, 7, '2019-12-27'),
+(12, 10, 3, '2022-11-07'),
+(13, 11, 1, '2019-04-15'),
+(14, 3, 3, '2021-10-16');
+
+SELECT fk_user_id, age, date_part('month',date1), AVG(price)
+FROM users
+JOIN purchases ON purchases.fk_user_id = users.user_id
+JOIN items ON items.item_id = purchases.fk_item_id
+WHERE age BETWEEN 18 AND 25
+GROUP BY date_part('month',date1),
+         fk_user_id,
+		age;
+
+SELECT fk_user_id, age, date_part('month',date1), AVG(price)
+FROM users
+JOIN purchases ON purchases.fk_user_id = users.user_id
+JOIN items ON items.item_id = purchases.fk_item_id
+WHERE age BETWEEN 26 AND 35
+GROUP BY date_part('month',date1),
+         fk_user_id,
+		age;
+
+SELECT price, date_part('month',date1)
+FROM items
+JOIN purchases ON purchases.fk_item_id = items.item_id
+JOIN users ON user_id = purchases.fk_user_id
+WHERE age > 34
+GROUP BY price, date_part('month',date1)
+ORDER BY price DESC
+LIMIT 1;
+
+SELECT item_id, SUM(price)
+FROM items
+JOIN purchases ON purchases.fk_item_id = items.item_id
+WHERE date1 BETWEEN '2021-11-10' AND '2022-11-09'
+GROUP BY item_id
+ORDER BY SUM(price) DESC
+LIMIT 1;
+
+CREATE VIEW total_receipts AS
+SELECT date_part('year', date1), SUM(price)
+FROM purchases
+JOIN items ON items.item_id = purchases.fk_item_id
+GROUP BY date_part('year', date1);
+
+
